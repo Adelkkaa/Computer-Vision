@@ -104,7 +104,8 @@ def grabcut_segmentation(image):
     bgd_model = np.zeros((1, 65), np.float64)
     fgd_model = np.zeros((1, 65), np.float64)
     rect = (50, 50, image.shape[1] - 100, image.shape[0] - 100)
-    cv2.grabCut(image, mask, rect, bgd_model, fgd_model, 5, cv2.GC_INIT_WITH_RECT)
+    print(rect)
+    cv2.grabCut(image, mask, rect, bgd_model, fgd_model, 10, cv2.GC_INIT_WITH_RECT)
     mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
     output = image * mask2[:, :, np.newaxis]
     return output

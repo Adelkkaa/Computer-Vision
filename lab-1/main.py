@@ -49,6 +49,7 @@ def compare_contours(template_contour, input_contours, threshold=0.9, min_area=1
                 similar_contours.append((contour, match_value))
     return similar_contours
 
+
 # Поиск похожих контуров для буквы "Ш"
 similar_contours_sh = compare_contours(contours_sh[0], contours_img)
 
@@ -70,11 +71,11 @@ for contour, match_value in similar_contours_a:
 
 
 # Вывод изображений с контуром букв
-cv2.namedWindow('Template D', cv2.WINDOW_NORMAL)
+cv2.namedWindow('Original Image', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('Original Image', 900, 700)
-cv2.imshow('original', img)
+cv2.imshow('Original Image', img)
 
-cv2.namedWindow('Template Matched Contours', cv2.WINDOW_NORMAL)
+cv2.namedWindow('Matched Contours', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('Matched Contours', 900, 700)
 cv2.imshow('Matched Contours', output_img)
 

@@ -54,10 +54,12 @@ for img_name in os.listdir(output_path):
         else:
             labels.append(1)
 
+
 print(f"Извлечено {len(descriptors_list)} наборов дескрипторов.")
 
 # Объединение всех дескрипторов в одну матрицу
 all_descriptors = np.vstack(descriptors_list)
+
 
 # Количество кластеров (слов в словаре)
 n_clusters = 1000  

@@ -37,7 +37,9 @@ while cap.isOpened():
 
     # ---- Метод 1: Усреднение фона ----
     if background_avg is None:
+        # Среднее значение фона
         background_avg = gray_frame.astype("float")
+        # Текущее стандартное отклонение
         background_std = np.zeros_like(gray_frame, dtype="float")
 
     # Обновляем среднее и стандартное отклонение
