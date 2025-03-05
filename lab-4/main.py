@@ -9,22 +9,17 @@ background_avg = None
 background_std = None
 
 # Выбор источника видео (файл или камера)
-video_source = "video.mp4"  # Замените на 0 для использования камеры
+video_source = "video.mp4"  
 cap = cv2.VideoCapture(video_source)
 
 # Параметры для метода кодовой книги (KNN)
 fgbg = cv2.createBackgroundSubtractorKNN()
 
 # Параметр для замедления видео (в миллисекундах)
-delay = 40  # Увеличьте это значение для более медленного воспроизведения
+delay = int(1000 / 60) 
 
-# Создаем объект для записи видео (если нужно сохранить результат)
-output_video = cv2.VideoWriter(
-    'output_video.mp4', 
-    cv2.VideoWriter_fourcc(*'mp4v'), 
-    30, 
-    (640, 360)
-)
+fps = cap.get(cv2.CAP_PROP_FPS)
+print(f"FPS исходного видео: {fps}")
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -39,20 +34,24 @@ while cap.isOpened():
     if background_avg is None:
         # Среднее значение фона
         background_avg = gray_frame.astype("float")
-        # Текущее стандартное отклонение
+        # Текущая накопленная дисперсия
         background_std = np.zeros_like(gray_frame, dtype="float")
 
-    # Обновляем среднее и стандартное отклонение
+    # Обновляем значения
     cv2.accumulateWeighted(gray_frame, background_avg, alpha)
     cv2.accumulateWeighted((gray_frame - background_avg) ** 2, background_std, alpha)
 
     # Вычисление стандартного отклонения
     std = cv2.sqrt(background_std)
-
     # Пороговое значение на основе среднего стандартного отклонения
-    mean_std = np.mean(std)
     diff = cv2.absdiff(gray_frame, background_avg.astype("uint8"))
-    _, fg_mask_avg = cv2.threshold(diff, 2 * mean_std, 255, cv2.THRESH_BINARY)
+
+    # _, fg_mask_avg = cv2.threshold(diff, threshold_value * std, 255, cv2.THRESH_BINARY)
+    threshold_value = 2
+    adaptive_threshold = threshold_value * std
+    adaptive_threshold = np.clip(adaptive_threshold, a_min=10, a_max=255)  # Ограничение порога
+
+    fg_mask_avg = (diff > adaptive_threshold).astype("uint8") * 255
 
     # ---- Метод 2: Кодовая книга (KNN) ----
     fg_mask_cb = fgbg.apply(frame)
@@ -74,7 +73,6 @@ while cap.isOpened():
 
     # Сохранение результата в видеофайл (если нужно)
     combined_frame = np.hstack((frame_resized, cv2.cvtColor(fg_mask_avg_resized, cv2.COLOR_GRAY2BGR), cv2.cvtColor(fg_mask_cb_resized, cv2.COLOR_GRAY2BGR)))
-    output_video.write(combined_frame)
 
     # Замедление воспроизведения видео
     if cv2.waitKey(delay) & 0xFF == ord('q'):
@@ -82,5 +80,4 @@ while cap.isOpened():
 
 # Освобождение ресурсов
 cap.release()
-output_video.release()
 cv2.destroyAllWindows()

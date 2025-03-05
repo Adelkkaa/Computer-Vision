@@ -31,6 +31,7 @@ def calibrate_camera(chessboard_images_path, chessboard_size=(7, 11)):
     ret, camera_matrix, dist_coeffs, _, _ = cv2.calibrateCamera(
         objpoints, imgpoints, img.shape[::-1], None, None
     )
+
     return camera_matrix, dist_coeffs  # Возвращаем матрицу камеры и коэффициенты искажения
 
 
@@ -43,7 +44,7 @@ def stereo_calibrate(camera_matrix, dist_coeffs, imgL, imgR):
     bf = cv2.BFMatcher()  # Создаем объект BFMatcher для сопоставления описателей
     matches = bf.knnMatch(des1, des2, k=2)  # Находим две лучших соответствия для каждой точки
 
-    # Отфильтровываем плохие соответствия, используя правило Лоу (Low's ratio test)
+    # Отфильтровываем плохие соответствия
     good_matches = [m for m, n in matches if m.distance < 0.7 * n.distance]
 
     # Проверяем, что есть достаточно хороших соответствий
@@ -76,6 +77,7 @@ def rectify_images(imgL, imgR, camera_matrix, dist_coeffs, R, T):
     # Создаем карты преобразования для исправления искажений и применения ректификации
     map1L, map2L = cv2.initUndistortRectifyMap(camera_matrix, dist_coeffs, R1, P1, (w, h), cv2.CV_32FC1)
     map1R, map2R = cv2.initUndistortRectifyMap(camera_matrix, dist_coeffs, R2, P2, (w, h), cv2.CV_32FC1)
+
 
     # Применяем карты преобразования к изображениям
     rectified_imgL = cv2.remap(imgL, map1L, map2L, cv2.INTER_LINEAR)
