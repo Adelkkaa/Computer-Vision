@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
 
-# Загрузка видео или подключение к камере
-video_input = cv2.VideoCapture('video.mp4')  # Для видеофайла
+video_input = cv2.VideoCapture('video.mp4') 
 
 # Список для хранения точек, которые нужно отслеживать
 selected_points = []

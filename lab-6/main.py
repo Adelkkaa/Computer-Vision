@@ -93,7 +93,7 @@ def fundamental_matrix_method(imgL, imgR):
     kp2, des2 = sift.detectAndCompute(imgR, None)  # Находим ключевые точки и их описатели на правом изображении
 
     bf = cv2.BFMatcher()  # Создаем объект BFMatcher для сопоставления описателей
-    matches = bf.knnMatch(des1, des2, k=2)  # Находим две лучших соответствия для каждой точки
+    matches = bf.knnMatch(des1, des2, k=2)  # Находим два лучших соответствия для каждой точки
 
     # Отфильтровываем плохие соответствия, используя правило Лоу (Low's ratio test)
     good_matches = [m for m, n in matches if m.distance < 0.7 * n.distance]
@@ -115,12 +115,15 @@ def fundamental_matrix_method(imgL, imgR):
         print("Ошибка: не удалось вычислить фундаментальную матрицу.")
         return None, None
 
-    # Вычисляем гомографию между точками
-    H, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC)
+     # Вычисляем гомографии для ректификации с помощью фундаментальной матрицы
+    h1, w1 = imgL.shape[:2]
+    h2, w2 = imgR.shape[:2]
 
-    # Применяем гомографию к левому изображению
-    rectified_imgL = cv2.warpPerspective(imgL, H, (imgL.shape[1], imgL.shape[0]))
-    rectified_imgR = imgR  # Правое изображение остается без изменений
+    _, H1, H2 = cv2.stereoRectifyUncalibrated(src_pts, dst_pts, F, imgSize=(w1, h1))
+
+    # Применяем гомографии к изображениям
+    rectified_imgL = cv2.warpPerspective(imgL, H1, (w1, h1))
+    rectified_imgR = cv2.warpPerspective(imgR, H2, (w2, h2))
 
     return rectified_imgL, rectified_imgR  # Возвращаем откалиброванные изображения
 
@@ -128,10 +131,11 @@ def fundamental_matrix_method(imgL, imgR):
 # Функция отображения всех изображений в одном окне
 def show_results(imgL, imgR, rectifiedL, rectifiedR):
     # Изменяем размер изображений для удобства просмотра
-    imgL_resized = cv2.resize(imgL, (640, 360))
-    imgR_resized = cv2.resize(imgR, (640, 360))
-    rectifiedL_resized = cv2.resize(rectifiedL, (640, 360))
-    rectifiedR_resized = cv2.resize(rectifiedR, (640, 360))
+    imgL_resized = cv2.resize(imgL, (400, 400))
+    imgR_resized = cv2.resize(imgR, (400, 400))
+    rectifiedL_resized = cv2.resize(rectifiedL, (400, 400))
+    rectifiedR_resized = cv2.resize(rectifiedR, (400, 400))
+    
 
     # Объединяем изображения горизонтально
     top_row = np.hstack((imgL_resized, imgR_resized))
